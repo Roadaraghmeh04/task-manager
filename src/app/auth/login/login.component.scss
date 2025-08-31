@@ -196,3 +196,17 @@
 .signup-btn:hover {
   background: #e49dbd; /* أغمق شوي */
 }
+.error-message {
+  color: #e74c3c; /* أحمر واضح */
+  font-size: 12px; /* أصغر خط */
+  margin: 8px 0;   /* مسافة فوق وتحت */
+  text-align: center; /* في الوسط */
+  font-weight: 500; /* خط متوسط السماكة */
+}
+
+input + small {
+  color: #e74c3c;  /* أحمر */
+  font-size: 12px; /* صغير */
+  margin-top: 4px; /* مسافة بسيطة فوق النص */
+  display: block;  /* حتى يظهر أسفل الحقل */
+}

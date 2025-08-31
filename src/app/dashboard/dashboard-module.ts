@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // ضروري للـ ngModel في TasksComponent
-import { DashboardRoutingModules } from './dashboard-routing-module';
+import { DashboardRoutingModule} from './dashboard-routing-module';
 
 import { DashboardComponent } from './dashboard.component';
 import { TasksComponent } from './tasks/tasks';
@@ -18,7 +18,7 @@ import { ProfileComponent } from './profile/profile';
   imports: [
     CommonModule,
     FormsModule,
-    DashboardRoutingModules
+    DashboardRoutingModule
   ]
 })
 export class DashboardModule {}

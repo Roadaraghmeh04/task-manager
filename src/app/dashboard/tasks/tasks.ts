@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { TaskService } from '../../services/task';
 
 @Component({
   selector: 'app-tasks',
@@ -6,21 +7,38 @@ import { Component } from '@angular/core';
   styleUrls: ['./tasks.scss'],
   standalone: false
 })
-export class TasksComponent {
-  tasks = [
-    { id: 1, title: 'Buy groceries', description: 'Milk, Bread', dueDate: '2025-08-25', priority: 'High', category: 'Personal', status: 'InProgress' },
-    { id: 2, title: 'Finish project', description: 'Angular assignment', dueDate: '2025-08-28', priority: 'Low', category: 'Work', status: 'Completed' }
-  ];
+export class TasksComponent implements OnInit {
+  tasks: any[] = [];
 
   statuses = ['InProgress', 'Completed', 'Canceled'];
   categories = ['Work', 'Personal'];
-  priorities = ['High', 'Medium', 'Low'];
+  priorities = ['High', 'Low'];
 
-  filters = {status: '', category: '', priority: ''};
+  filters = { status: '', category: '', priority: '' };
 
   showModal = false;
   isEditing = false;
-  currentTask: any = {id: 0, title: '', description: '', dueDate: '', priority: '', category: '', status: 'InProgress'};
+  currentTask: any = {
+    id: 0,
+    title: '',
+    description: '',
+    dueDate: '',
+    priority: 'High',
+    category: 'Work',
+    status: 'InProgress'
+  };
+
+  constructor(private taskService: TaskService) {}
+
+  ngOnInit() {
+    this.loadTasks();
+  }
+
+  loadTasks() {
+    this.taskService.getTasks().subscribe((tasks: any[]) => {
+      this.tasks = tasks;
+    });
+  }
 
   get filteredTasks() {
     return this.tasks.filter(task =>
@@ -31,42 +49,50 @@ export class TasksComponent {
   }
 
   markNextStatus(task: any) {
-    if(task.status === 'InProgress') task.status = 'Completed';
-    else if(task.status === 'Completed') task.status = 'Canceled';
+    if (task.status === 'InProgress') task.status = 'Completed';
+    else if (task.status === 'Completed') task.status = 'Canceled';
+    this.taskService.updateTask(task.id, task).subscribe(); // تحديث على السيرفر
   }
 
   deleteTask(task: any) {
-    this.tasks = this.tasks.filter(t => t.id !== task.id);
+    this.taskService.deleteTask(task.id).subscribe(() => {
+      this.tasks = this.tasks.filter(t => t.id !== task.id);
+    });
   }
 
   editTask(task: any) {
     this.isEditing = true;
-    this.currentTask = {...task};
+    this.currentTask = { ...task };
     this.showModal = true;
   }
 
   addTask() {
     this.isEditing = false;
     this.currentTask = {
-      id: this.tasks.length + 1,
+      id: 0,
       title: '',
       description: '',
       dueDate: '',
-      priority: 'Medium',
+      priority: 'High',
       category: 'Work',
-      status: 'InProgress' // افتراضي
+      status: 'InProgress'
     };
     this.showModal = true;
   }
 
   saveTask() {
     if (this.isEditing) {
-      const index = this.tasks.findIndex(t => t.id === this.currentTask.id);
-      if (index > -1) this.tasks[index] = {...this.currentTask};
+      this.taskService.updateTask(this.currentTask.id, this.currentTask).subscribe((updated: { id: any; }) => {
+        const index = this.tasks.findIndex(t => t.id === updated.id);
+        if (index > -1) this.tasks[index] = updated;
+        this.showModal = false;
+      });
     } else {
-      this.tasks.push({...this.currentTask});
+      this.taskService.addTask(this.currentTask).subscribe((created: any) => {
+        this.tasks.push(created);
+        this.showModal = false;
+      });
     }
-    this.showModal = false;
   }
 
   closeModal() {
@@ -85,9 +111,9 @@ export class TasksComponent {
   getPriorityColor(priority: string) {
     switch (priority) {
       case 'High': return '#7bbef5';
-      case 'Medium': return '#4a90e2';
       case 'Low': return '#fbb8d1';
       default: return '#ccc';
     }
   }
+
 }
