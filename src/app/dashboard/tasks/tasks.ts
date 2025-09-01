@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { TaskService } from '../../services/task';
 
+interface Category {
+  id: number;
+  name: string;
+}
+
 @Component({
   selector: 'app-tasks',
   templateUrl: './tasks.html',
@@ -9,11 +14,9 @@ import { TaskService } from '../../services/task';
 })
 export class TasksComponent implements OnInit {
   tasks: any[] = [];
-
   statuses = ['InProgress', 'Completed', 'Canceled'];
-  categories = ['Work', 'Personal'];
   priorities = ['High', 'Low'];
-
+  userCategories: Category[] = [];
   filters = { status: '', category: '', priority: '' };
 
   showModal = false;
@@ -24,20 +27,39 @@ export class TasksComponent implements OnInit {
     description: '',
     dueDate: '',
     priority: 'High',
-    category: 'Work',
+    category: '',
     status: 'InProgress'
   };
 
   constructor(private taskService: TaskService) {}
 
   ngOnInit() {
-    this.loadTasks();
+    this.loadUserCategories(); // أولاً نحمل الكاتيجوريز
+    this.loadTasks();          // بعدين نحمل المهام
   }
 
   loadTasks() {
-    this.taskService.getTasks().subscribe((tasks: any[]) => {
+    this.taskService.getTasks().subscribe(tasks => {
       this.tasks = tasks;
     });
+  }
+
+  loadUserCategories() {
+    this.taskService.getUserCategories().subscribe(
+      (cats: Category[]) => {
+        console.log('Categories from API:', cats);
+        this.userCategories = cats;
+
+        // خزنهم داخل الخدمة عشان add/update task يستخدمهم
+        this.taskService.userCategories = cats;
+
+        // حدد default category للمهمة الحالية إذا موجودة
+        if (this.userCategories.length > 0 && !this.currentTask.category) {
+          this.currentTask.category = this.userCategories[0].name;
+        }
+      },
+      (err) => console.error('Error loading categories', err)
+    );
   }
 
   get filteredTasks() {
@@ -48,10 +70,26 @@ export class TasksComponent implements OnInit {
     );
   }
 
-  markNextStatus(task: any) {
-    if (task.status === 'InProgress') task.status = 'Completed';
-    else if (task.status === 'Completed') task.status = 'Canceled';
-    this.taskService.updateTask(task.id, task).subscribe(); // تحديث على السيرفر
+  addTask() {
+    this.isEditing = false;
+    this.showModal = true;
+
+    this.currentTask = {
+      id: 0,
+      title: '',
+      description: '',
+      dueDate: '',
+      priority: 'High',
+      category: this.userCategories.length > 0 ? this.userCategories[0].id : 0, // 👈 نخزن id مش title
+      status: 'InProgress'
+    };
+  }
+
+
+  editTask(task: any) {
+    this.isEditing = true;
+    this.currentTask = { ...task };
+    this.showModal = true;
   }
 
   deleteTask(task: any) {
@@ -60,43 +98,31 @@ export class TasksComponent implements OnInit {
     });
   }
 
-  editTask(task: any) {
-    this.isEditing = true;
-    this.currentTask = { ...task };
-    this.showModal = true;
-  }
-
-  addTask() {
-    this.isEditing = false;
-    this.currentTask = {
-      id: 0,
-      title: '',
-      description: '',
-      dueDate: '',
-      priority: 'High',
-      category: 'Work',
-      status: 'InProgress'
-    };
-    this.showModal = true;
-  }
-
   saveTask() {
     if (this.isEditing) {
-      this.taskService.updateTask(this.currentTask.id, this.currentTask).subscribe((updated: { id: any; }) => {
-        const index = this.tasks.findIndex(t => t.id === updated.id);
-        if (index > -1) this.tasks[index] = updated;
-        this.showModal = false;
-      });
+      this.taskService.updateTask(this.currentTask.id, this.currentTask)
+        .subscribe((updated: any) => {
+          const index = this.tasks.findIndex(t => t.id === updated.id);
+          if (index > -1) this.tasks[index] = updated;
+          this.showModal = false;
+        });
     } else {
-      this.taskService.addTask(this.currentTask).subscribe((created: any) => {
-        this.tasks.push(created);
-        this.showModal = false;
-      });
+      this.taskService.addTask(this.currentTask)
+        .subscribe((created: any) => {
+          this.tasks.push(created);
+          this.showModal = false;
+        });
     }
   }
 
   closeModal() {
     this.showModal = false;
+  }
+
+  markNextStatus(task: any) {
+    if (task.status === 'InProgress') task.status = 'Completed';
+    else if (task.status === 'Completed') task.status = 'Canceled';
+    this.taskService.updateTask(task.id, task).subscribe();
   }
 
   getStatusColor(status: string) {
@@ -115,5 +141,4 @@ export class TasksComponent implements OnInit {
       default: return '#ccc';
     }
   }
-
 }

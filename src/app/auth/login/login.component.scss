@@ -210,3 +210,53 @@ input + small {
   margin-top: 4px; /* مسافة بسيطة فوق النص */
   display: block;  /* حتى يظهر أسفل الحقل */
 }
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 40px; /* مساحة للأيقونة */
+}
+
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+  font-size: 18px; /* حجم أوضح */
+}
+
+.eye-icon:hover {
+  color: #4a90e2; /* يتغير لونها عند الهوفر */
+}
+/* نفس الحجم لكل الحقول */
+.login-container .form-group input {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+/* عشان الأيقونة ما تصغر التكست */
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%; /* نفس عرض تبع الإيميل */
+  padding-right: 40px; /* مساحة لعين */
+}
+
+.password-wrapper .eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+

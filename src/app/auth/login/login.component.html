@@ -26,8 +26,18 @@
           </small>
         </div>
 
-        <div class="form-group">
-          <input [type]="hidePassword ? 'password' : 'text'" id="password" formControlName="password" placeholder="Password">
+        <!-- Password Field -->
+        <div class="form-group password-wrapper">
+          <input [type]="hidePassword ? 'password' : 'text'"
+                 id="password"
+                 formControlName="password"
+                 placeholder="Password">
+
+          <!-- أيقونة العين -->
+          <span class="eye-icon" (click)="togglePasswordVisibility()">
+            <i class="fa" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+          </span>
+
           <small *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
             Password must be at least 6 characters
           </small>

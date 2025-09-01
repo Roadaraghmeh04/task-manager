@@ -7,7 +7,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { App } from './app';
 import { AboutComponent } from './about/about';
 import { AuthInterceptor } from './interceptors/auth-interceptor'; // استدعاء الـ interceptor
-
+import { CategoriesComponent } from './dashboard/categories/categories';
 const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
@@ -19,15 +19,19 @@ const routes: Routes = [
     loadChildren: () =>
       import('./dashboard/dashboard-module').then(m => m.DashboardModule)
   },
-  { path: 'about', component: AboutComponent }
+  { path: 'about', component: AboutComponent },
+  { path: 'categories', component: CategoriesComponent }
 ];
 
 @NgModule({
-  declarations: [App, ],  // ✅ تأكد ان AboutComponent موجود هنا
+  declarations: [
+    App,
+
+  ],
   imports: [
     BrowserModule,
     ReactiveFormsModule,
-    HttpClientModule,
+    HttpClientModule, // ✅ مهم عشان HttpClient يشتغل
     RouterModule.forRoot(routes)
   ],
   providers: [

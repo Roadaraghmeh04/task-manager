@@ -25,7 +25,9 @@ export class LoginComponent {
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
-
+  togglePasswordVisibility() {
+    this.hidePassword = !this.hidePassword;
+  }
   onSubmit() {
     if (this.loginForm.valid) {
       this.isLoading = true;

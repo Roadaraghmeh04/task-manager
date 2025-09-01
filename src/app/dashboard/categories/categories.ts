@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CategoryService } from '../../services/category';
 
 @Component({
   selector: 'app-categories',
@@ -6,19 +7,27 @@ import { Component } from '@angular/core';
   styleUrls: ['./categories.scss'],
   standalone: false
 })
-export class CategoriesComponent {
-  categories = [
-    { id: 1, name: 'Work', description: 'Tasks related to work' },
-    { id: 2, name: 'Personal', description: 'Personal tasks and errands' }
-  ];
-
+export class CategoriesComponent implements OnInit {
+  categories: any[] = [];
   showModal = false;
   isEditing = false;
   currentCategory: any = { id: 0, name: '', description: '' };
 
+  constructor(private categoryService: CategoryService) {}
+
+  ngOnInit() {
+    this.loadCategories();
+  }
+
+  loadCategories() {
+    this.categoryService.getCategories().subscribe((res: any) => {
+      this.categories = res;
+    });
+  }
+
   addCategory() {
     this.isEditing = false;
-    this.currentCategory = { id: this.categories.length + 1, name: '', description: '' };
+    this.currentCategory = { id: 0, name: '', description: '' };
     this.showModal = true;
   }
 
@@ -29,15 +38,18 @@ export class CategoriesComponent {
   }
 
   deleteCategory(category: any) {
-    this.categories = this.categories.filter(c => c.id !== category.id);
+    this.categoryService.deleteCategory(category.id).subscribe(() => {
+      this.loadCategories();
+    });
   }
 
   saveCategory() {
     if (this.isEditing) {
-      const index = this.categories.findIndex(c => c.id === this.currentCategory.id);
-      if (index > -1) this.categories[index] = { ...this.currentCategory };
+      this.categoryService.updateCategory(this.currentCategory.id, this.currentCategory)
+        .subscribe(() => this.loadCategories());
     } else {
-      this.categories.push({ ...this.currentCategory });
+      this.categoryService.addCategory(this.currentCategory)
+        .subscribe(() => this.loadCategories());
     }
     this.showModal = false;
   }
